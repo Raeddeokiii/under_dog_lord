@@ -81,3 +81,6 @@ tools/
 # Claude Code settings
 .claude/
 CLAUDE.md
+
+# Design docs (local only)
+docs/
