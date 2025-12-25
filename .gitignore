@@ -76,3 +76,13 @@ tools/dist/
 # IDE
 .idea/
 .vscode/
+
+# Dev utility scripts (local only)
+tools/apply_class_sync.py
+tools/fix_*.py
+tools/integrate_*.py
+tools/sync_*.py
+tools/test_*.py
+tools/build_exe.py
+tools/update_*.py
+tools/write_*.py
