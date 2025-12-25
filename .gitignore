@@ -80,3 +80,4 @@ tools/
 
 # Claude Code settings
 .claude/
+CLAUDE.md
