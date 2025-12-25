@@ -1,0 +1,6 @@
+id,name,race,class,hp,max_mana,phys_atk,mag_atk,phys_def,mag_def,atk_speed,move_speed,atk_range,crit_chance,crit_damage,dodge,accuracy,phys_ls,mag_ls,heal_power,phys_pen,mag_pen,cdr,mana_regen,hp_regen,cc_resist,debuff_resist,growth_hp,growth_mana,growth_patk,growth_matk,growth_pdef,growth_mdef,skills,tags
+fire_mage,화염 마법사,human,mage,300,100,10,80,10,30,0.8,80,5,15,150,5,100,0,0,0,0,10,0,5,0,0,0,30,10,0,8,0,3,fireball,mage|fire|ranged
+ice_mage,얼음 마법사,elf,mage,280,120,8,85,8,35,0.75,85,5,10,140,10,95,0,0,0,0,15,0,6,0,0,0,25,12,0,9,0,4,ice_bolt,mage|ice|ranged
+warrior,전사,human,warrior,500,50,60,10,40,20,1.0,70,1,20,160,5,100,5,0,0,10,0,0,2,5,0,0,50,5,6,0,4,2,stun_strike,melee|physical|tank
+priest,사제,human,priest,320,150,15,50,15,40,0.7,75,4,5,120,5,100,0,0,30,0,5,10,8,3,0,0,30,15,0,5,2,4,heal,healer|holy|ranged
+target_dummy,타겟 더미,construct,dummy,10000,0,0,0,50,50,0,0,0,0,0,0,0,0,0,0,0,0,0,0,100,100,100,0,0,0,0,0,0,,dummy|test

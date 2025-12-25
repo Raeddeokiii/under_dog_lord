@@ -1,0 +1,10 @@
+id,name,hp,build_cost_gold,build_cost_wood,build_cost_stone,build_time,size_x,size_y,produces,income_gold,income_wood,income_stone,income_interval,max_garrison,defense_bonus,requirements,tags
+barracks,병영,500,100,50,0,10,2,2,warrior,0,0,0,0,0,0,,military|production
+mage_tower,마법사 탑,400,150,30,50,15,2,2,fire_mage|ice_mage,0,0,0,0,0,10,,military|production|magic
+temple,사원,350,200,40,60,20,2,2,priest,0,0,0,0,0,5,,military|production|holy
+gold_mine,금광,300,50,100,0,8,2,2,,10,0,0,5,0,0,,economy|resource
+lumber_mill,제재소,250,30,0,0,6,2,2,,0,8,0,5,0,0,,economy|resource
+stone_quarry,채석장,350,40,50,0,10,2,2,,0,0,6,5,0,0,,economy|resource
+wall,성벽,800,20,0,30,5,1,1,,0,0,0,0,0,20,,defense
+tower,방어탑,600,80,20,40,12,1,1,,0,0,0,0,2,15,,defense|military
+castle,성,2000,500,200,300,60,4,4,warrior|fire_mage|priest,5,2,2,10,10,25,barracks|mage_tower,military|production|headquarters

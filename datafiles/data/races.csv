@@ -1,0 +1,11 @@
+id,name,hp,mana,phys_atk,mag_atk,phys_def,mag_def,atk_speed,move_speed,crit_chance,crit_damage,dodge,accuracy,lifesteal,healing_power,hp_regen,mana_regen,cc_resist,debuff_resist,tags
+human,인간,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,humanoid
+elf,엘프,-15,20,-10,15,-10,10,10,15,5,0,15,10,0,0,0,10,0,0,humanoid|elf
+dwarf,드워프,20,-10,10,-15,20,10,-10,-15,0,10,-10,0,0,0,5,0,15,10,humanoid|dwarf
+orc,오크,15,-20,25,-20,5,-15,5,0,10,20,-5,-5,5,-20,10,-10,10,0,humanoid|orc|greenskin
+undead,언데드,0,10,5,10,10,5,-5,-10,0,0,-10,0,10,-50,-100,5,30,50,undead|dark
+demon,악마,5,15,5,20,0,15,5,5,5,15,0,5,15,-30,0,10,10,20,demon|dark|evil
+slime,슬라임,30,0,-30,-20,25,15,-20,-25,-10,-20,-20,-10,0,0,20,0,50,30,slime|amorphous
+dragon,용족,25,20,15,20,15,25,-15,0,10,20,-5,10,0,0,5,5,25,25,dragon|flying
+construct,구조물,50,-50,0,-30,40,20,-30,-50,0,0,-50,0,0,-100,10,0,100,100,construct|mechanical
+dragonian,용인,25,20,15,20,15,25,-15,0,10,20,-5,10,0,0,5,5,25,25,dragon|flying

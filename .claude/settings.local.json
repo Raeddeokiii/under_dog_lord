@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"D:\\\\gml_game\\\\new_game\\\\under_dog_lord\\\\extensions\"\" 2>/dev/null || echo \"No extensions folder \")",
+      "Bash(find:*)",
+      "Bash(dir /s /b *.py)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(cd:*)",
+      "Bash(pyinstaller:*)",
+      "Bash(D:/gml_game/under_dog_lord/tools/dist/UDL_ContentEditor.exe)",
+      "Bash(D:)",
+      "Bash(cmd /c \"cd /d D:\\\\gml_game\\\\under_dog_lord\\\\tools && pyinstaller --onefile --windowed --name UDL_ContentEditor --add-data src;src --add-data data;data main.py\")",
+      "Bash(del \"D:\\\\gml_game\\\\under_dog_lord\\\\tools\\\\data\\\\races.json\" \"D:\\\\gml_game\\\\under_dog_lord\\\\tools\\\\data\\\\classes.json\")",
+      "Bash(cmd /c \"cd /d D:\\\\gml_game\\\\under_dog_lord\\\\tools && python -c \"\"from src.main_window import MainWindow; from PyQt6.QtWidgets import QApplication; import sys; app = QApplication\\(sys.argv\\); mw = MainWindow\\(\\); print\\(''Races:'', len\\(mw.races\\)\\); print\\(''Classes:'', len\\(mw.classes\\)\\); print\\(''Skills:'', len\\(mw.skills\\)\\); print\\(''Units:'', len\\(mw.units\\)\\); [print\\(''  Skill:'', k\\) for k,v in mw.skills.items\\(\\)]; [print\\(''  Unit:'', k\\) for k,v in mw.units.items\\(\\)]\"\"\")",
+      "Bash(del D:gml_gameunder_dog_lordtoolstest_csv_load.py)",
+      "Bash(cmd /c del \"D:\\\\gml_game\\\\under_dog_lord\\\\tools\\\\test_csv_load.py\")",
+      "Bash(cmd /c del \"D:\\\\gml_game\\\\under_dog_lord\\\\tools\\\\test_buildings.py\")",
+      "Bash(cmd /c \"cd /d D:\\\\gml_game\\\\under_dog_lord\\\\tools && pyinstaller --onefile --windowed --name UDL_ContentEditor --add-data src;src main.py\")",
+      "Bash(claude mcp add github -- npx -y @modelcontextprotocol/server-github)",
+      "Bash(git -C D:/gml_game/under_dog_lord status)",
+      "Bash(git init:*)",
+      "Bash(gh:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
