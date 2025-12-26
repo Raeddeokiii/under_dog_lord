@@ -27,6 +27,7 @@
   },
   "name":"under_dog_lord",
   "resources":[
+    {"id":{"name":"obj_game_controller","path":"objects/obj_game_controller/obj_game_controller.yy",},},
     {"id":{"name":"obj_debug_controller","path":"objects/obj_debug_controller/obj_debug_controller.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"scr_ai","path":"scripts/scr_ai/scr_ai.yy",},},
