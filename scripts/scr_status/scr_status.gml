@@ -12,9 +12,9 @@
 - buff (버프): 스탯 증가
 - debuff (디버프): 스탯 감소
 
-CC 저항 적용:
-- cc_resist: 기절, 속박, 침묵 지속시간 감소
-- debuff_resist: 둔화율, 디버프 효과량 감소
+저항 적용:
+- cc_resist (행동불능 저항): 기절, 속박, 침묵 지속시간 감소
+- debuff_resist (약화 저항): 둔화율, 디버프 효과량 감소
 */
 
 /// @func init_status_system()
@@ -22,7 +22,7 @@ CC 저항 적용:
 function init_status_system() {
     // 상태이상 타입 정의
     global.status_types = {
-        // CC (군중제어) - cc_resist 적용
+        // 행동불능 (Hard CC) - cc_resist 적용
         stun: {
             id: "stun",
             name: "기절",
@@ -50,7 +50,7 @@ function init_status_system() {
             blocks_skill: true,
             stackable: false
         },
-        // 디버프 - debuff_resist 적용
+        // 약화 (Soft Debuff) - debuff_resist 적용
         slow: {
             id: "slow",
             name: "둔화",
@@ -115,6 +115,42 @@ function init_status_system() {
             is_cc: false,
             is_buff: true,
             stackable: true  // 보호막은 중첩 가능
+        },
+        // 기사 스킬용 특수 효과
+        guardian: {
+            id: "guardian",
+            name: "보호자",
+            is_cc: false,
+            is_buff: true,
+            stackable: false
+        },
+        protected: {
+            id: "protected",
+            name: "보호받음",
+            is_cc: false,
+            is_buff: true,
+            stackable: false
+        },
+        duel: {
+            id: "duel",
+            name: "결투",
+            is_cc: false,
+            is_buff: true,
+            stackable: false
+        },
+        immortal: {
+            id: "immortal",
+            name: "불멸",
+            is_cc: false,
+            is_buff: true,
+            stackable: false
+        },
+        buff_defense: {
+            id: "buff_defense",
+            name: "방어력 증가",
+            is_cc: false,
+            is_buff: true,
+            stackable: false
         }
     };
 }
@@ -131,12 +167,29 @@ function apply_status_effect(unit, effect_data) {
 
     var type_id = effect_data.type;
     var type_info = global.status_types[$ type_id];
-    if (type_info == undefined) return false;
+
+    // 동적 버프 타입 처리 (buff_defense 등)
+    if (type_info == undefined) {
+        // buff_ 접두사 또는 특수 효과 타입인 경우 기본 버프로 처리
+        if (string_pos("buff_", type_id) == 1 ||
+            type_id == "guardian" || type_id == "protected" ||
+            type_id == "duel" || type_id == "immortal") {
+            type_info = {
+                id: type_id,
+                name: type_id,
+                is_cc: false,
+                is_buff: true,
+                stackable: false
+            };
+        } else {
+            return false;
+        }
+    }
 
     var duration = effect_data.duration;
     var amount = variable_struct_exists(effect_data, "amount") ? effect_data.amount : 0;
 
-    // CC 저항 적용 (기절, 속박, 침묵)
+    // 행동불능 저항 적용 (기절, 속박, 침묵)
     if (variable_struct_exists(type_info, "is_cc") && type_info.is_cc) {
         var cc_reduction = unit.cc_resist / 100;
         duration = duration * (1 - cc_reduction);
@@ -148,7 +201,7 @@ function apply_status_effect(unit, effect_data) {
         }
     }
 
-    // 디버프 저항 적용 (둔화, 약화, 취약, DOT)
+    // 약화 저항 적용 (둔화, 약화, 취약, DOT)
     if (variable_struct_exists(type_info, "is_debuff") && type_info.is_debuff) {
         var debuff_reduction = unit.debuff_resist / 100;
 
@@ -176,6 +229,15 @@ function apply_status_effect(unit, effect_data) {
         damage_type: variable_struct_exists(effect_data, "damage_type") ? effect_data.damage_type : "none",
         tick_timer: 0
     };
+
+    // 추가 속성 복사 (guardian, duel 등 특수 효과용)
+    if (variable_struct_exists(effect_data, "stat")) new_effect.stat = effect_data.stat;
+    if (variable_struct_exists(effect_data, "value")) new_effect.value = effect_data.value;
+    if (variable_struct_exists(effect_data, "percent")) new_effect.percent = effect_data.percent;
+    if (variable_struct_exists(effect_data, "defense_bonus")) new_effect.defense_bonus = effect_data.defense_bonus;
+    if (variable_struct_exists(effect_data, "protected_unit")) new_effect.protected_unit = effect_data.protected_unit;
+    if (variable_struct_exists(effect_data, "protector")) new_effect.protector = effect_data.protector;
+    if (variable_struct_exists(effect_data, "opponent")) new_effect.opponent = effect_data.opponent;
 
     // 중첩 처리
     if (!type_info.stackable) {
@@ -359,7 +421,7 @@ function is_silenced(unit) {
 }
 
 /// @func is_cc_immune(unit)
-/// @desc CC 완전 면역 여부 (cc_resist 100%)
+/// @desc 행동불능 완전 면역 여부 (cc_resist 100%)
 function is_cc_immune(unit) {
     return unit.cc_resist >= 100;
 }
@@ -449,6 +511,173 @@ function get_status_effect_list(unit) {
     return unit.status_effects;
 }
 
+// ============================================
+// 결투(Duel) 시스템 함수
+// ============================================
+
+/// @func is_in_duel(unit)
+/// @desc 유닛이 결투 중인지 확인
+function is_in_duel(unit) {
+    return has_status_effect(unit, "duel");
+}
+
+/// @func get_duel_opponent(unit)
+/// @desc 결투 상대 유닛 반환 (없으면 undefined)
+function get_duel_opponent(unit) {
+    var effect = get_status_effect(unit, "duel");
+    if (effect != undefined && variable_struct_exists(effect, "opponent")) {
+        return effect.opponent;
+    }
+    return undefined;
+}
+
+/// @func can_attack_target(attacker, target)
+/// @desc 공격자가 대상을 공격할 수 있는지 확인 (결투 상태 고려)
+function can_attack_target(attacker, target) {
+    // 공격자가 결투 중이면 결투 상대만 공격 가능
+    if (is_in_duel(attacker)) {
+        var opponent = get_duel_opponent(attacker);
+        if (opponent != undefined && opponent != target) {
+            return false;  // 결투 상대가 아니면 공격 불가
+        }
+    }
+
+    // 대상이 결투 중이면 결투 상대만 공격 가능
+    if (is_in_duel(target)) {
+        var target_opponent = get_duel_opponent(target);
+        if (target_opponent != undefined && target_opponent != attacker) {
+            return false;  // 결투에 개입 불가
+        }
+    }
+
+    return true;
+}
+
+/// @func can_receive_damage_from(defender, attacker)
+/// @desc 방어자가 공격자로부터 피해를 받을 수 있는지 확인
+function can_receive_damage_from(defender, attacker) {
+    // 방어자가 결투 중이면 결투 상대만 피해 가능
+    if (is_in_duel(defender)) {
+        var opponent = get_duel_opponent(defender);
+        if (opponent != undefined && opponent != attacker) {
+            return false;  // 결투 상대가 아니면 피해 무효
+        }
+    }
+
+    return true;
+}
+
+/// @func get_duel_defense_bonus(unit)
+/// @desc 결투로 인한 방어력 보너스 (%) 반환
+function get_duel_defense_bonus(unit) {
+    var effect = get_status_effect(unit, "duel");
+    if (effect != undefined && variable_struct_exists(effect, "defense_bonus")) {
+        return effect.defense_bonus;
+    }
+    return 0;
+}
+
+/// @func get_buff_defense_bonus(unit)
+/// @desc 버프로 인한 방어력 보너스 (%) 반환
+function get_buff_defense_bonus(unit) {
+    var effect = get_status_effect(unit, "buff_defense");
+    if (effect != undefined && variable_struct_exists(effect, "value")) {
+        return effect.value;
+    }
+    return 0;
+}
+
+// ============================================
+// 보호자(Guardian) 시스템 함수
+// ============================================
+
+/// @func is_protected(unit)
+/// @desc 유닛이 보호받는 상태인지 확인
+function is_protected(unit) {
+    return has_status_effect(unit, "protected");
+}
+
+/// @func is_guardian(unit)
+/// @desc 유닛이 보호자 상태인지 확인
+function is_guardian(unit) {
+    return has_status_effect(unit, "guardian");
+}
+
+/// @func get_protector(unit)
+/// @desc 보호자 유닛 반환 (없으면 undefined)
+function get_protector(unit) {
+    var effect = get_status_effect(unit, "protected");
+    if (effect != undefined && variable_struct_exists(effect, "protector")) {
+        return effect.protector;
+    }
+    return undefined;
+}
+
+/// @func get_protected_unit(guardian)
+/// @desc 보호받는 유닛 반환 (없으면 undefined)
+function get_protected_unit(guardian) {
+    var effect = get_status_effect(guardian, "guardian");
+    if (effect != undefined && variable_struct_exists(effect, "protected_unit")) {
+        return effect.protected_unit;
+    }
+    return undefined;
+}
+
+/// @func get_guardian_defense_bonus(unit)
+/// @desc 보호자로 인한 방어력 보너스 (%) 반환
+function get_guardian_defense_bonus(unit) {
+    var effect = get_status_effect(unit, "guardian");
+    if (effect != undefined && variable_struct_exists(effect, "defense_bonus")) {
+        return effect.defense_bonus;
+    }
+    return 0;
+}
+
+/// @func is_immortal(unit)
+/// @desc 불멸 상태인지 확인
+function is_immortal(unit) {
+    return has_status_effect(unit, "immortal");
+}
+
+/// @func apply_damage_with_immortal(unit, damage)
+/// @desc 불멸 상태를 고려하여 피해 적용 (HP가 1 이하로 떨어지지 않음)
+/// @return 실제 적용된 피해량
+function apply_damage_with_immortal(unit, damage) {
+    if (is_immortal(unit)) {
+        // 불멸 상태: HP가 1 이하로 떨어지지 않음
+        var max_damage = unit.hp - 1;
+        if (max_damage <= 0) {
+            return 0;  // 이미 HP가 1 이하면 피해 없음
+        }
+        var actual_damage = min(damage, max_damage);
+        unit.hp = max(1, unit.hp - actual_damage);
+        return actual_damage;
+    } else {
+        // 일반 상태: 정상 피해 적용
+        unit.hp = max(0, unit.hp - damage);
+        return damage;
+    }
+}
+
+/// @func should_redirect_damage(target, attacker)
+/// @desc 피해를 보호자에게 리다이렉트해야 하는지 확인
+/// @return 보호자 유닛 또는 undefined
+function should_redirect_damage(target, attacker) {
+    // 대상이 보호받는 상태인지 확인
+    if (!is_protected(target)) return undefined;
+
+    var protector = get_protector(target);
+    if (protector == undefined) return undefined;
+
+    // 보호자가 살아있는지 확인
+    if (protector.hp <= 0) return undefined;
+
+    // 보호자가 아직 guardian 상태인지 확인
+    if (!is_guardian(protector)) return undefined;
+
+    return protector;
+}
+
 /// @func get_status_icon_color(type_id)
 /// @desc 상태이상 타입별 아이콘 색상
 function get_status_icon_color(type_id) {
@@ -464,6 +693,17 @@ function get_status_icon_color(type_id) {
         case "haste": return c_aqua;
         case "might": return c_red;
         case "shield": return c_white;
-        default: return c_gray;
+        // 기사 스킬용
+        case "guardian": return c_aqua;
+        case "protected": return c_lime;
+        case "duel": return c_orange;
+        case "immortal": return c_yellow;
+        case "buff_defense": return c_silver;
+        default:
+            // buff_ 접두사 처리
+            if (string_pos("buff_", type_id) == 1) {
+                return c_lime;
+            }
+            return c_gray;
     }
 }

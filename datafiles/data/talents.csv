@@ -1,0 +1,101 @@
+ID,Name,Name_KR,Rarity,Trigger,Effect_Type,Stat1,Value1,Stat2,Value2,Duration,CC_Type,CC_Duration,Target,Cooldown,Description,Dev_Note
+TLT_001,Sharp Eyes,날카로운 눈,Common,ON_CRIT,cc,,,,,stun,1,enemy,0,치명타 적중 시 적 1초 기절,추가 CC
+TLT_002,Bloodthirst,피에 굶주린 자,Rare,ON_KILL,special,COOLDOWN_RESET,,,,,0,self,0,적 처치 시 모든 스킬 쿨타임 초기화,연속 스킬
+TLT_003,Berserker Blood,광전사의 피,Common,HP<50%,buff,ATK,30,,,0,,0,self,0,체력 50% 이하 시 공격력 30% 증가,저체력 버프
+TLT_004,Iron Mind,강인한 정신력,Common,ON_CC,buff,CC_RESIST,50,,,0,,0,self,0,CC기 50% 확률로 저항,CC 저항
+TLT_005,Sharp Reflexes,예리한 반사신경,Common,ON_DODGE,special,COUNTER_ATTACK,,,,,0,enemy,5,회피 성공 시 반격,회피 연계
+TLT_006,Blood Hunger,피의 갈증,Rare,ON_KILL,heal,HP,20,,,0,,0,self,0,적 처치 시 최대 체력 20% 회복,처치 회복
+TLT_007,Provocative Nature,도발적 기질,Common,ON_BLOCK,cc,,,,,stun,0.5,enemy,3,방어 성공 시 0.5초 기절,방어 연계
+TLT_008,Arcane Affinity,마법 친화력,Rare,ON_SKILL,buff,SKILL_DMG,50,,,0,,0,self,10,스킬 사용 후 다음 스킬 피해 50% 증가,스킬 연계
+TLT_009,Racing Heart,빠른 심장,Common,ON_HIT_TAKEN,buff,SPD,20,,,3,,0,self,8,피격 시 3초간 속도 20% 증가,피격 버프
+TLT_010,Executioner's Eye,처형자의 눈,Rare,ENEMY_HP<20%,buff,DMG,100,,,0,,0,self,0,적 체력 20% 이하 시 피해 2배,마무리 특화
+TLT_011,Tough Hide,단단한 피부,Common,ALWAYS,buff,PHYS_DMG_REDUCE,10,,,0,,0,self,0,물리 피해 10% 감소,물리 방어
+TLT_012,Magic Resistance,마법 내성,Common,ALWAYS,buff,MAGIC_DMG_REDUCE,10,,,0,,0,self,0,마법 피해 10% 감소,마법 방어
+TLT_013,Quick Reflexes,빠른 반사신경,Rare,BATTLE_START,special,FIRST_ATTACK,,,,,0,self,0,전투 시작 시 가장 먼저 공격,선공권
+TLT_014,Stubborn Vitality,끈질긴 생명력,Common,HP<10%,buff,DEF,50,,,0,,0,self,0,체력 10% 이하 시 방어력 50% 증가,생존기
+TLT_015,Lucky Body,행운의 몸,Common,ALWAYS,buff,DODGE,10,,,0,,0,self,0,회피율 10% 증가,회피 보너스
+TLT_016,Giant Build,거인의 체격,Common,ALWAYS,buff,KNOCKBACK,50,,,0,,0,self,0,넉백 거리 50% 증가,넉백 강화
+TLT_017,Mana Absorbing Body,마나 흡수 체질,Rare,ON_HIT_TAKEN,special,ABSORB_MP,,,,,0,self,0,피해를 마나로 대신 흡수,마나 방어
+TLT_018,Shadow Born,그림자 태생,Rare,FROM_STEALTH,buff,DMG,100,,,0,,0,self,0,은신 상태에서 공격 시 피해 2배,암살 특화
+TLT_019,Survival Instinct,생존 본능,Common,HP<30%,buff,SPD,50,,,5,,0,self,15,체력 30% 이하 시 5초간 이속 50% 증가,도주 보조
+TLT_020,Fearsome Aura,공포의 기운,Rare,ON_KILL,debuff,ATK,-20,,,5,,0,enemy_aoe,0,적 처치 시 주변 적 공격력 20% 감소,공포 효과
+TLT_021,Blessed Soul,축복받은 영혼,Epic,ALWAYS,buff,ALL_STAT,5,,,0,,0,self,0,모든 능력치 5% 증가,전체 버프
+TLT_022,Cursed Hands,저주받은 손,Rare,ON_HIT,dot,,,,,3,,0,enemy,0,공격 시 저주 부여 (지속 피해),디버프 공격
+TLT_023,Soul Hunger,영혼에 굶주린 자,Epic,ON_KILL,buff,ATK,1,,,0,,0,self,0,적 처치 시 영구 공격력 1% 증가 (최대 50%),스택형 성장
+TLT_024,Born Leader,타고난 지휘관,Rare,BATTLE_START,buff,ATK,10,,,10,,0,ally_aoe,0,전투 시작 시 아군 공격력 10% 증가,팀 버프
+TLT_025,Grudging Soul,원한 맺힌 영혼,Epic,ON_DEATH,damage,DMG,200,,,0,,0,enemy_aoe,0,사망 시 주변에 공격력 200% 광역 피해,유언 공격
+TLT_026,Predator's Sense,포식자의 감각,Rare,ENEMY_DEBUFF,buff,DMG,30,,,0,,0,self,0,디버프 상태 적에게 피해 30% 증가,디버프 연계
+TLT_027,Regenerating Body,재생 체질,Common,HP<30%,buff,HP_REGEN,2,,,0,,0,self,0,체력 30% 이하 시 초당 2% 회복,저체력 회복
+TLT_028,Twin Arms,두 쌍의 팔,Rare,ON_ATTACK,special,DOUBLE_ATTACK,20,,,,0,self,0,20% 확률로 2회 공격,추가 타격
+TLT_029,Deflecting Aura,튕겨내는 기운,Common,ON_HIT_TAKEN,special,BLOCK,15,,,,0,self,0,15% 확률로 피해 무효화,확률 방어
+TLT_030,Accelerating Body,가속하는 몸,Rare,ON_KILL,buff,SPD,10,,,0,,0,self,0,적 처치 시 영구 속도 10% 증가 (전투 중),스택형 속도
+TLT_031,Elemental Affinity,원소 친화력,Epic,ALWAYS,buff,ELEM_DMG,25,,,0,,0,self,0,모든 속성 피해 25% 증가,속성 특화
+TLT_032,Unbreakable Mind,부서지지 않는 정신,Epic,ALWAYS,special,CC_IMMUNE,,,,,0,self,0,모든 CC 면역,CC 면역
+TLT_033,Reckless Nature,무모한 기질,Rare,ALWAYS,combo,ATK,50,DEF,-30,0,,0,self,0,공격력 50% 증가 방어력 30% 감소,트레이드오프
+TLT_034,Sturdy Build,튼튼한 체격,Common,ALWAYS,combo,HP,20,ATK,-10,0,,0,self,0,체력 20% 증가 공격력 10% 감소,탱커형
+TLT_035,Relentless Spirit,끈질긴 투지,Rare,ON_HIT,special,COMBO_ATK,5,,,,0,self,0,연속 공격 시 타격당 공격력 5% 증가 (최대 50%),연타 특화
+TLT_036,Healing Hands,치유의 손,Common,ON_HEAL,buff,HEAL_POWER,30,,,0,,0,self,0,힐량 30% 증가,힐러 특화
+TLT_037,Venomous Body,독을 품은 몸,Common,ON_HIT,dot,POISON,10,,,3,,0,enemy,0,공격 시 3초간 독 부여,독 공격
+TLT_038,Frost Hands,냉기를 머금은 손,Common,ON_HIT,cc,,,,,slow,30,enemy,0,공격 시 2초간 이속 30% 감소,둔화 공격
+TLT_039,Flame Hands,화염을 머금은 손,Common,ON_HIT,dot,BURN,15,,,3,,0,enemy,0,공격 시 3초간 화상 부여,화상 공격
+TLT_040,Lightning Affinity,번개 친화력,Rare,ON_SKILL,special,CHAIN,3,,,,0,enemy,0,스킬이 최대 3명에게 연쇄,연쇄 공격
+TLT_041,Death Defying Body,죽음을 거부하는 몸,Epic,ON_FATAL,special,SURVIVE,1,,,,0,self,60,치명적 피해 시 HP 1로 생존 (60초 쿨),생존기
+TLT_042,Golden Eyes,황금을 보는 눈,Common,ON_KILL,buff,GOLD,20,,,0,,0,self,0,처치 시 골드 획득 20% 증가,골드 파밍
+TLT_043,Quick Mind,빠른 두뇌,Common,ALWAYS,buff,EXP,15,,,0,,0,self,0,경험치 획득 15% 증가,성장 보조
+TLT_044,Keen Nose,예민한 코,Common,ON_KILL,buff,ITEM_DROP,10,,,0,,0,self,0,아이템 드랍률 10% 증가,파밍 보조
+TLT_045,Destructive Strength,파괴적인 힘,Rare,VS_STRUCTURE,buff,DMG,100,,,0,,0,self,0,건물/구조물에 피해 2배,공성 특화
+TLT_046,Monster Hunter Blood,괴수 사냥꾼의 피,Rare,VS_MONSTER,buff,DMG,20,,,0,,0,self,0,몬스터에게 피해 20% 증가,사냥 특화
+TLT_047,Duelist Blood,결투가의 피,Rare,VS_SINGLE,buff,DMG,30,,,0,,0,self,0,1:1 상황에서 피해 30% 증가,결투 특화
+TLT_048,Brawler Instinct,난전 본능,Rare,VS_MULTIPLE,buff,DEF,30,,,0,,0,self,0,다수 상대 시 방어력 30% 증가,난전 특화
+TLT_049,Prodigy,천재,Legendary,ALWAYS,combo,ALL_STAT,10,EQUIP_ALL,1,0,,0,self,0,모든 스탯 10% 증가 및 모든 장비 착용 가능,최상위 재능
+TLT_050,Fate's Blessing,운명의 축복,Legendary,ON_NEAR_DEATH,heal,HP,100,,,0,,0,self,180,사망 직전 완전 회복 (3분 쿨),전설 생존기
+TLT_051,Piercing Gaze,꿰뚫는 눈,Rare,ON_ATTACK,buff,ARMOR_PEN,30,,,0,,0,self,0,공격 시 방어력 30% 무시,관통 공격
+TLT_052,Vampiric Body,흡혈 체질,Rare,ON_HIT,buff,LIFESTEAL,10,,,0,,0,self,0,피해의 10% 체력 회복,흡혈 효과
+TLT_053,Shadow Body,그림자의 몸,Epic,ON_DODGE,special,TELEPORT_BEHIND,,,,,0,self,8,회피 시 적 뒤로 순간이동,기습 연계
+TLT_054,Thorny Skin,가시 피부,Common,ON_HIT_TAKEN,special,REFLECT_DMG,15,,,,0,self,0,받은 피해의 15% 반사,반사 데미지
+TLT_055,Inspiring Aura,고무적인 기운,Rare,BATTLE_START,buff,SPD,15,,,15,,0,ally_aoe,0,전투 시작 시 아군 속도 15% 증가,팀 속도 버프
+TLT_056,Rooted Body,뿌리내린 몸,Epic,ALWAYS,combo,DEF,30,SPD,-100,0,,0,self,0,방어력 30% 증가 대신 이동 불가,고정 방어
+TLT_057,Long Arms,긴 팔,Rare,ON_ATTACK,special,AOE_CHANCE,30,,,,0,self,0,공격이 30% 확률로 광역 피해,광역 확률
+TLT_058,Mana Draining Hands,마나를 빨아들이는 손,Rare,ON_HIT,special,BURN_MP,20,,,,0,enemy,0,공격 시 적 마나 20 소모,마나 방해
+TLT_059,Echoing Magic,메아리치는 마력,Epic,ON_SKILL,special,SKILL_REPEAT,30,,,,0,self,0,30% 확률로 스킬 즉시 재사용,스킬 반복
+TLT_060,Guardian Soul,수호자의 영혼,Legendary,ALLY_DEATH,special,REVIVE,50,,,,0,ally,120,아군 사망 시 50% 체력으로 부활,부활 지원
+TLT_061,Frenzied Blood,광기의 피,Rare,HP<30%,buff,CRIT,50,,,0,,0,self,0,체력 30% 이하 시 치명타 확률 50% 증가,저체력 치명타
+TLT_062,Stone Body,돌의 육체,Common,ALWAYS,combo,DEF,15,SPD,-10,0,,0,self,0,방어력 15% 증가 속도 10% 감소,방어 트레이드
+TLT_063,Light Body,가벼운 몸,Common,ALWAYS,combo,SPD,20,DEF,-10,0,,0,self,0,속도 20% 증가 방어력 10% 감소,속도 트레이드
+TLT_064,Glutton,대식가,Rare,ON_KILL,buff,HP_MAX,5,,,0,,0,self,0,적 처치 시 최대 체력 5% 영구 증가 (전투 중),스택형 체력
+TLT_065,Disruptive Aura,방해의 기운,Common,ON_HIT,special,INTERRUPT,20,,,,0,enemy,0,20% 확률로 적 스킬 시전 중단,스킬 방해
+TLT_066,Eagle Eyes,매의 눈,Common,ALWAYS,buff,HIT,15,,,0,,0,self,0,명중률 15% 증가,명중 보너스
+TLT_067,Phantom Body,환영의 몸,Rare,ALWAYS,buff,DODGE,20,,,0,,0,self,0,회피율 20% 증가,회피 마스터
+TLT_068,Deadly Eyes,치명적인 눈,Rare,ALWAYS,combo,CRIT,15,CRIT_DMG,20,0,,0,self,0,치명타 확률 15% 피해 20% 증가,치명타 마스터
+TLT_069,Self-Healing Body,스스로 치유하는 몸,Common,ALWAYS,buff,HP_REGEN,1,,,0,,0,self,0,초당 최대 체력 1% 회복,지속 회복
+TLT_070,Shielded Soul,보호받는 영혼,Rare,BATTLE_START,special,SHIELD,20,,,,0,self,0,전투 시작 시 최대 체력 20% 보호막,시작 보호막
+TLT_071,Overwhelming Strength,압도적인 힘,Rare,ATK>ENEMY_DEF*2,cc,,,,,stun,0.5,enemy,0,공격력이 적 방어의 2배 이상이면 기절,압도 기절
+TLT_072,Underdog Blood,약자의 피,Epic,HP<ENEMY_HP*0.5,buff,DMG,50,,,0,,0,self,0,체력이 적보다 절반 이하면 피해 50% 증가,역전 특화
+TLT_073,Provocative Presence,도발적인 존재감,Common,ON_SPAWN,special,AGGRO,,,,,0,self,10,스폰 시 적들이 자신을 공격하도록 도발,탱커 어그로
+TLT_074,First Strike Instinct,선제 공격 본능,Rare,FIRST_ATTACK,buff,CRIT,100,,,0,,0,self,0,첫 공격 100% 치명타,선공 치명타
+TLT_075,Multiple Arms,여러 개의 팔,Rare,ON_ATTACK,special,MULTI_TARGET,2,,,,0,self,0,공격이 2명을 동시에 타격,다중 타격
+TLT_076,Vengeful Heart,복수심,Rare,ON_HIT_TAKEN,buff,ATK,30,,,0,,0,self,0,피격 후 다음 공격 30% 증가,피격 연계
+TLT_077,Wide Reach,넓은 공격 범위,Common,ON_ATTACK,special,CLEAVE,20,,,,0,enemy_aoe,0,공격이 주변 적에게 20% 피해,광역 공격
+TLT_078,Focused Mind,집중하는 정신,Rare,SAME_TARGET,buff,DMG,10,,,0,,0,self,0,같은 대상 연속 공격 시 타격당 10% 증가,집중 특화
+TLT_079,Rallying Aura,집결의 기운,Rare,HP<50%,buff,DEF,20,,,5,,0,ally_aoe,15,체력 50% 이하 시 주변 아군 방어 20% 증가,위기 지원
+TLT_080,Sacrificial Nature,희생적인 성격,Epic,ALLY_HP<20%,special,TRANSFER_HP,30,,,,0,ally,30,아군 위기 시 자신의 체력 30% 전달,힐 지원
+TLT_081,Berserk Blood,광폭한 피,Rare,HP<20%,combo,ATK,100,DEF,-50,0,,0,self,0,체력 20% 이하 시 공격력 2배 방어력 절반,최후의 발악
+TLT_082,Defensive Instinct,방어 본능,Epic,ON_BLOCK,damage,COUNTER,150,,,0,,0,enemy,0,방어 성공 시 150% 피해 반격,방어 마스터
+TLT_083,Overloaded Body,과부하 체질,Epic,MP_FULL,combo,SKILL_DMG,100,SELF_DMG,10,0,,0,self,0,마나 풀 시 스킬 피해 2배 대신 자해 10%,고위험 고보상
+TLT_084,Bonded Soul,연결된 영혼,Legendary,ALLY_SELECT,special,SHARE_DMG,50,,,,0,ally,0,지정 아군과 피해 50% 공유,연결 생존
+TLT_085,Time Affinity,시간 친화력,Legendary,ON_SKILL,buff,COOLDOWN_REDUCE,50,,,0,,0,self,0,모든 스킬 쿨타임 50% 감소,쿨타임 마스터
+TLT_086,Fused Elements,융합된 원소,Epic,ON_ELEM_ATK,special,COMBO_ELEM,,,,,0,self,0,속성 공격이 복합 속성으로 변환,속성 융합
+TLT_087,Battle-Hardened Body,전장에서 단련된 몸,Common,ALWAYS,special,EXP_TO_STAT,10,,,,0,self,0,경험치 10%가 능력치로 전환,성장 특화
+TLT_088,Golden Hands,황금 손,Common,ON_CRIT,buff,GOLD,50,,,0,,0,self,0,치명타 시 골드 50 획득,치명타 보상
+TLT_089,Plague Body,역병의 몸,Rare,ON_DEATH,dot,POISON,10,,,5,,0,enemy_aoe,0,사망 시 주변 적 5초간 독 부여,유언 독
+TLT_090,Martyr's Soul,순교자의 영혼,Epic,ON_DEATH,buff,ALL_STAT,20,,,0,,0,ally_aoe,0,사망 시 생존 아군 모든 능력치 20% 증가,유언 버프
+TLT_091,Indomitable Spirit,불굴의 정신,Rare,ON_CC,special,BREAK_CC,50,,,,0,self,5,CC 상태에서 50% 확률로 즉시 해제,CC 탈출
+TLT_092,Far-Seeing Eyes,먼 곳을 보는 눈,Rare,RANGE>5,buff,DMG,40,,,0,,0,self,0,거리 5칸 이상에서 공격 시 피해 40% 증가,원거리 특화
+TLT_093,Close Combat Instinct,근접전 본능,Rare,RANGE<2,buff,DMG,40,,,0,,0,self,0,근접 공격 시 피해 40% 증가,근접 특화
+TLT_094,Adaptive Body,적응하는 육체,Epic,ON_HIT_TAKEN,special,ADAPT_RESIST,5,,,,0,self,0,받은 속성 피해에 대한 저항 5% 영구 증가,적응 방어
+TLT_095,Pack Instinct,무리의 본능,Rare,ALLY_NEARBY>2,buff,ATK,25,,,0,,0,self,0,주변 아군 2명 이상 시 공격력 25% 증가,팀워크 공격
+TLT_096,Lone Wolf Blood,외로운 늑대의 피,Rare,ALLY_NEARBY==0,buff,ALL_STAT,30,,,0,,0,self,0,주변 아군 없을 때 모든 스탯 30% 증가,솔로 특화
+TLT_097,Keen Senses,예리한 감각,Common,ALWAYS,special,HIDDEN_REVEAL,,,,,0,self,0,숨겨진 아이템 자동 탐지,탐색 보조
+TLT_098,Danger Sense,위험 감지력,Rare,ENEMY_SKILL_CAST,buff,DODGE,50,,,2,,0,self,0,적 스킬 시전 시 2초간 회피율 50% 증가,스킬 회피
+TLT_099,Divine Blessing,신의 가호,Legendary,ON_DEATH,special,REVIVE_SELF,30,,,,0,self,300,사망 시 30% 체력으로 자동 부활 (5분 쿨),자가 부활
+TLT_100,Chaos Blood,혼돈의 피,Legendary,ON_ATTACK,special,RANDOM_EFFECT,,,,,0,self,0,공격 시 랜덤 효과 발동 (버프/디버프/피해 등),무작위 효과

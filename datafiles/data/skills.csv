@@ -1,5 +1,9 @@
-id,name,mana_cost,cooldown,damage_type,effect_type,base_amount,scale_stat,scale_percent,dot_amount,dot_duration,heal_amount,buff_stat,buff_value,buff_duration,cc_type,cc_duration,aoe_radius,target_type,tags
-fireball,파이어볼,30,3,fire,damage,50,magic_attack,150,10,3,0,,,0,,0,0,enemy,magic|fire|ranged
-ice_bolt,얼음 화살,25,2,ice,damage,40,magic_attack,120,0,0,0,,,0,slow,2,0,enemy,magic|ice|ranged
-heal,치유,40,5,holy,heal,0,magic_attack,100,0,0,80,,,0,,0,0,ally,magic|holy|heal
-stun_strike,기절 타격,20,8,physical,damage,30,physical_attack,100,0,0,0,,,0,stun,1.5,0,enemy,physical|melee|cc
+id,name,mana_cost,cooldown,damage_type,effect_type,base_amount,scale_stat,scale_percent,dot_amount,dot_duration,heal_amount,buff_stat,buff_value,buff_duration,cc_type,cc_duration,aoe_radius,range,target_type,tags
+fireball,파이어볼,30,3,fire,damage,50,magic_attack,150,10,3,0,,,0,,0,0,500,enemy,magic|fire|ranged
+ice_bolt,얼음 화살,25,2,ice,damage,40,magic_attack,120,0,0,0,,,0,slow,2,0,450,enemy,magic|ice|ranged
+heal,치유,40,5,holy,heal,0,magic_attack,100,0,0,80,,,0,,0,0,400,ally,magic|holy|heal
+stun_strike,기절 타격,20,8,physical,damage,30,physical_attack,100,0,0,0,,,0,stun,1.5,0,80,enemy,physical|melee|cc
+shield_wall,방패벽,40,12,physical,buff,0,,0,0,0,0,defense,50,5,,0,0,300,ally,knight|buff|aoe|physical
+guardian,대신 맞아주기,60,20,physical,guardian,0,,0,0,0,0,defense,50,5,,0,0,200,ally,knight|protection|physical
+honorable_duel,명예로운 결투,50,25,physical,duel,0,,0,0,0,0,defense,30,10,,0,0,150,enemy,knight|duel|physical
+indomitable_will,불굴의 의지,80,45,holy,immortal,0,,0,0,0,0,,0,5,,0,0,0,self,knight|immortal|holy

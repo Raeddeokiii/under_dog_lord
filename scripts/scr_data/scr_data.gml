@@ -96,7 +96,8 @@ function init_race_data() {
             mana_regen: real(cols[17]),
             cc_resist: real(cols[18]),
             debuff_resist: real(cols[19]),
-            tags: parse_tags(cols[20])
+            atk_range_mod: real(cols[20]),
+            tags: parse_tags(cols[21])
         };
     }
 
@@ -160,7 +161,7 @@ function get_race_bonus(race_id) {
             phys_def: 0, mag_def: 0, atk_speed: 0, move_speed: 0,
             crit_chance: 0, crit_damage: 0, dodge: 0, accuracy: 0,
             lifesteal: 0, healing_power: 0, hp_regen: 0, mana_regen: 0,
-            cc_resist: 0, debuff_resist: 0, tags: []
+            cc_resist: 0, debuff_resist: 0, atk_range_mod: 0, tags: []
         };
     }
     return race;
@@ -200,7 +201,7 @@ function init_skill_data() {
         if (line == "") continue;
 
         var cols = csv_split_line(line);
-        if (array_length(cols) < 20) continue;
+        if (array_length(cols) < 21) continue;
 
         var skill_id = cols[0];
         if (skill_id == "") continue;
@@ -233,6 +234,43 @@ function init_skill_data() {
                 scale_stat: cols[7],
                 scale_percent: real(cols[8])
             });
+        } else if (effect_type == "buff") {
+            // 버프 스킬 (방패벽 등)
+            var buff_stat = cols[12];
+            var buff_value = real(cols[13]);
+            var buff_duration = real(cols[14]);
+            array_push(effects, {
+                type: "buff",
+                stat: buff_stat,
+                value: buff_value,
+                percent: true,  // 퍼센트 증가로 처리
+                duration: buff_duration
+            });
+        } else if (effect_type == "guardian") {
+            // 대신 맞아주기 (보호자 효과)
+            var buff_value = real(cols[13]);
+            var buff_duration = real(cols[14]);
+            array_push(effects, {
+                type: "guardian",
+                defense_bonus: buff_value,
+                duration: buff_duration
+            });
+        } else if (effect_type == "duel") {
+            // 명예로운 결투 (1:1 강제)
+            var buff_value = real(cols[13]);
+            var buff_duration = real(cols[14]);
+            array_push(effects, {
+                type: "duel",
+                defense_bonus: buff_value,
+                duration: buff_duration
+            });
+        } else if (effect_type == "immortal") {
+            // 불굴의 의지 (HP 1 이하 불가)
+            var buff_duration = real(cols[14]);
+            array_push(effects, {
+                type: "immortal",
+                duration: buff_duration
+            });
         }
 
         // CC 효과 추가
@@ -252,8 +290,9 @@ function init_skill_data() {
             damage_type: cols[4],
             effects: effects,
             aoe_radius: real(cols[17]),
-            target_type: cols[18],
-            tags: parse_tags(cols[19])
+            range: real(cols[18]),
+            target_type: cols[19],
+            tags: parse_tags(cols[20])
         };
     }
 
@@ -428,7 +467,9 @@ function create_unit_from_template(template_id, team, level) {
     var final_mdef = floor(mdef_r * (1 + cls.mag_def_mod / 100));
     var final_atk_speed = atk_speed_r;
     var final_move_speed = floor(move_speed_r * (1 + cls.speed_mod / 100));
-    var final_range = base_range + cls.atk_range_mod;
+    // 사거리 계산: 기본 + 직업 보정(×20) + 종족 보정(×10)
+    var race_range_mod = race.atk_range_mod ?? 0;
+    var final_range = base_range + (cls.atk_range_mod * 20) + (race_range_mod * 10);
 
     var unit = {
         id: global.next_unit_id,
@@ -476,6 +517,7 @@ function create_unit_from_template(template_id, team, level) {
         // 기타
         skills: [],
         skill_cooldowns: {},
+        attack_cooldown: 0,  // 기본 공격 쿨타임
         x: 0,
         y: 0,
         is_alive: true
@@ -553,6 +595,90 @@ function get_building(building_id) {
     return global.buildings[$ building_id];
 }
 
+// ============================================
+// 재능 데이터 (CSV 로드)
+// ============================================
+
+/// @function init_talent_data()
+/// @desc 재능 데이터 로드 (talents.csv)
+/// 컬럼: ID,Name,Name_KR,Rarity,Trigger,Effect_Type,Stat1,Value1,Stat2,Value2,Duration,CC_Type,CC_Duration,Target,Cooldown,Description,Dev_Note
+function init_talent_data() {
+    global.talents = {};
+
+    var file = file_text_open_read("data/talents.csv");
+    if (file == -1) {
+        show_debug_message("ERROR: data/talents.csv not found!");
+        return;
+    }
+
+    // 헤더 스킵
+    file_text_read_string(file);
+    file_text_readln(file);
+
+    while (!file_text_eof(file)) {
+        var line = file_text_read_string(file);
+        file_text_readln(file);
+
+        if (line == "") continue;
+
+        var cols = csv_split_line(line);
+        if (array_length(cols) < 17) continue;
+
+        var talent_id = cols[0];
+        if (talent_id == "") continue;
+
+        // 안전한 숫자 파싱 (빈 문자열 처리)
+        var val1 = (cols[7] != "") ? real(cols[7]) : 0;
+        var val2 = (cols[9] != "") ? real(cols[9]) : 0;
+        var dur = (cols[10] != "") ? real(cols[10]) : 0;
+        var cc_dur = (cols[12] != "") ? real(cols[12]) : 0;
+        var cd = (cols[14] != "") ? real(cols[14]) : 0;
+
+        global.talents[$ talent_id] = {
+            id: talent_id,
+            name: cols[1],
+            name_kr: cols[2],
+            rarity: cols[3],
+            trigger: cols[4],
+            // 효과 데이터 (컬럼 기반)
+            effect_type: cols[5],    // buff, debuff, cc, heal, damage, special, combo, dot
+            stat1: cols[6],          // ATK, DEF, SPD, HP 등
+            value1: val1,            // 수치 (% 기준)
+            stat2: cols[8],          // 2차 스탯 (combo용)
+            value2: val2,            // 2차 수치
+            duration: dur,           // 효과 지속시간 (초)
+            cc_type: cols[11],       // stun, slow, root, silence
+            cc_duration: cc_dur,     // CC 지속시간
+            target: cols[13],        // self, enemy, ally, ally_aoe, enemy_aoe
+            cooldown: cd,            // 재능 쿨다운
+            description: cols[15],
+            dev_note: cols[16]
+        };
+    }
+
+    file_text_close(file);
+    show_debug_message("Loaded " + string(struct_names_count(global.talents)) + " talents from CSV");
+}
+
+/// @function get_talent(talent_id)
+/// @desc 재능 데이터 가져오기
+function get_talent(talent_id) {
+    if (variable_struct_exists(global.talents, talent_id)) {
+        return global.talents[$ talent_id];
+    }
+    return undefined;
+}
+
+/// @function get_talent_by_index(idx)
+/// @desc 인덱스로 재능 가져오기
+function get_talent_by_index(idx) {
+    var keys = variable_struct_get_names(global.talents);
+    if (idx >= 0 && idx < array_length(keys)) {
+        return global.talents[$ keys[idx]];
+    }
+    return undefined;
+}
+
 /// @function init_all_data()
 /// @desc 모든 게임 데이터 초기화
 function init_all_data() {
@@ -561,5 +687,8 @@ function init_all_data() {
     init_skill_data();
     init_unit_data();
     init_building_data();
+    init_talent_data();    // 재능 데이터 초기화
+    init_talent_system();  // 재능 시스템 초기화 (구독맵, 파서, 캐시)
     init_status_system();  // 상태이상 시스템 초기화
+    init_ai_weights();     // AI 가중치 초기화
 }
