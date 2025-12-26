@@ -35,6 +35,8 @@
     {"id":{"name":"scr_pathfinding","path":"scripts/scr_pathfinding/scr_pathfinding.yy",},},
     {"id":{"name":"scr_status","path":"scripts/scr_status/scr_status.yy",},},
     {"id":{"name":"scr_talent","path":"scripts/scr_talent/scr_talent.yy",},},
+    {"id":{"name":"scr_combat","path":"scripts/scr_combat/scr_combat.yy",},},
+    {"id":{"name":"scr_soul","path":"scripts/scr_soul/scr_soul.yy",},},
   ],
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
