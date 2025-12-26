@@ -188,11 +188,11 @@ function create_ally_unit(unit_id, _x, _y, level) {
         max_hp: base.hp * (1 + (level - 1) * 0.1),
         physical_attack: base.atk * (1 + (level - 1) * 0.1),
         physical_defense: base.def * (1 + (level - 1) * 0.05),
-        magic_attack: base.matk ?? 0,
-        magic_defense: base.mdef ?? 0,
-        attack_range: base.range ?? 80,
-        attack_speed: base.aspd ?? 1.0,
-        movement_speed: base.mspd ?? 60,
+        magic_attack: base[$ "matk"] ?? 0,
+        magic_defense: base[$ "mdef"] ?? 0,
+        attack_range: base[$ "range"] ?? 80,
+        attack_speed: base[$ "aspd"] ?? 1.0,
+        movement_speed: base[$ "mspd"] ?? 60,
 
         // 상태
         is_alive: true,
@@ -200,8 +200,8 @@ function create_ally_unit(unit_id, _x, _y, level) {
         is_summon: false,
 
         // 역할
-        ai_type: base.role ?? "warrior",
-        role: base.role ?? "warrior",
+        ai_type: base[$ "role"] ?? "warrior",
+        role: base[$ "role"] ?? "warrior",
 
         // AI
         ai_state: "idle",
