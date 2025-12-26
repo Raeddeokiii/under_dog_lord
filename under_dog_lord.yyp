@@ -40,6 +40,7 @@
     {"id":{"name":"scr_wave","path":"scripts/scr_wave/scr_wave.yy",},},
     {"id":{"name":"scr_deploy","path":"scripts/scr_deploy/scr_deploy.yy",},},
     {"id":{"name":"scr_ui","path":"scripts/scr_ui/scr_ui.yy",},},
+    {"id":{"name":"scr_skill","path":"scripts/scr_skill/scr_skill.yy",},},
   ],
   "resourceType":"GMProject",
   "resourceVersion":"2.0",

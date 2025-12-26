@@ -1104,20 +1104,781 @@ function ai_ally_attack(unit, delta) {
         unit.ai_state = "idle";
         return;
     }
-    
+
     var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
     var attack_range = unit.attack_range ?? 80;
-    
+
     if (dist > attack_range) {
         unit.ai_target = undefined;
         unit.ai_state = "idle";
         return;
     }
-    
+
     if (unit.attack_timer <= 0) {
         ai_attack_unit(unit, unit.ai_target);
-        
+
         var attack_speed = unit.attack_speed ?? 1.0;
         unit.attack_timer = 1.0 / max(attack_speed, 0.1);
     }
+}
+
+// ============================================
+// M3-3: Ranged AI (원거리 적)
+// ============================================
+// 적정 거리를 유지하며 원거리 공격하는 AI
+
+/// @function ai_ranged_update(unit, delta)
+/// @desc Ranged AI 메인 업데이트
+function ai_ranged_update(unit, delta) {
+    if (unit.hp <= 0) return;
+
+    // AI 상태 초기화
+    if (!variable_struct_exists(unit, "ai_state")) {
+        unit.ai_state = "idle";
+        unit.ai_target = undefined;
+        unit.attack_timer = 0;
+        unit.kite_distance = (unit.attack_range ?? 200) * 0.7;
+    }
+
+    if (unit.attack_timer > 0) {
+        unit.attack_timer -= delta;
+    }
+
+    switch (unit.ai_state) {
+        case "idle":
+            ai_ranged_idle(unit);
+            break;
+        case "position":
+            ai_ranged_position(unit, delta);
+            break;
+        case "attack":
+            ai_ranged_attack(unit, delta);
+            break;
+        case "kite":
+            ai_ranged_kite(unit, delta);
+            break;
+    }
+}
+
+/// @function ai_ranged_idle(unit)
+function ai_ranged_idle(unit) {
+    unit.ai_target = find_target_by_priority(unit, "nearest");
+
+    if (unit.ai_target != undefined) {
+        unit.ai_state = "position";
+    }
+}
+
+/// @function ai_ranged_position(unit, delta)
+/// @desc 적정 거리로 위치 조정
+function ai_ranged_position(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 200;
+    var kite_distance = unit.kite_distance ?? 140;
+
+    // 너무 가까우면 후퇴
+    if (dist < kite_distance) {
+        unit.ai_state = "kite";
+        return;
+    }
+
+    // 사거리 내면 공격
+    if (dist <= attack_range) {
+        unit.ai_state = "attack";
+        return;
+    }
+
+    // 사거리 밖이면 접근
+    var dir = point_direction(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var move_speed = unit.movement_speed ?? 70;
+    unit.x += lengthdir_x(move_speed * delta, dir);
+    unit.y += lengthdir_y(move_speed * delta, dir);
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_ranged_attack(unit, delta)
+function ai_ranged_attack(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 200;
+    var kite_distance = unit.kite_distance ?? 140;
+
+    // 너무 가까워지면 후퇴
+    if (dist < kite_distance) {
+        unit.ai_state = "kite";
+        return;
+    }
+
+    // 사거리 밖이면 재위치
+    if (dist > attack_range) {
+        unit.ai_state = "position";
+        return;
+    }
+
+    // 공격
+    if (unit.attack_timer <= 0) {
+        ai_attack_unit(unit, unit.ai_target);
+
+        var attack_speed = unit.attack_speed ?? 0.8;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_ranged_kite(unit, delta)
+/// @desc 후퇴 (카이팅)
+function ai_ranged_kite(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var kite_distance = unit.kite_distance ?? 140;
+
+    // 충분히 멀어지면 공격 재개
+    if (dist >= kite_distance * 1.2) {
+        unit.ai_state = "attack";
+        return;
+    }
+
+    // 타겟 반대 방향으로 후퇴
+    var dir = point_direction(unit.ai_target.x, unit.ai_target.y, unit.x, unit.y);
+    var move_speed = unit.movement_speed ?? 70;
+    unit.x += lengthdir_x(move_speed * delta, dir);
+    unit.y += lengthdir_y(move_speed * delta, dir);
+
+    // 후퇴 중에도 공격 가능
+    var attack_range = unit.attack_range ?? 200;
+    if (dist <= attack_range && unit.attack_timer <= 0) {
+        ai_attack_unit(unit, unit.ai_target);
+
+        var attack_speed = unit.attack_speed ?? 0.8;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+// ============================================
+// M3-3: Boss AI
+// ============================================
+// 보스 유닛용 AI - 패턴 기반 행동
+
+/// @function ai_boss_update(unit, delta)
+/// @desc Boss AI 메인 업데이트
+function ai_boss_update(unit, delta) {
+    if (unit.hp <= 0) return;
+
+    // AI 상태 초기화
+    if (!variable_struct_exists(unit, "ai_state")) {
+        unit.ai_state = "idle";
+        unit.ai_target = undefined;
+        unit.attack_timer = 0;
+        unit.pattern_timer = 0;
+        unit.current_pattern = 0;
+        unit.enraged = false;
+    }
+
+    if (unit.attack_timer > 0) {
+        unit.attack_timer -= delta;
+    }
+
+    if (unit.pattern_timer > 0) {
+        unit.pattern_timer -= delta;
+    }
+
+    // 분노 체크 (HP 30% 이하)
+    if (!unit.enraged && unit.hp / unit.max_hp <= 0.3) {
+        unit.enraged = true;
+        unit.physical_attack *= 1.5;
+        unit.attack_speed *= 1.3;
+        combat_log("★ " + (unit.display_name ?? "보스") + " 분노!");
+    }
+
+    switch (unit.ai_state) {
+        case "idle":
+            ai_boss_idle(unit);
+            break;
+        case "move":
+            ai_boss_move(unit, delta);
+            break;
+        case "attack":
+            ai_boss_attack(unit, delta);
+            break;
+        case "skill":
+            ai_boss_skill(unit, delta);
+            break;
+    }
+}
+
+/// @function ai_boss_idle(unit)
+function ai_boss_idle(unit) {
+    unit.ai_target = find_target_by_priority(unit, "highest_threat");
+
+    if (unit.ai_target != undefined) {
+        unit.ai_state = "move";
+    }
+}
+
+/// @function ai_boss_move(unit, delta)
+function ai_boss_move(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 80;
+
+    if (dist <= attack_range) {
+        unit.ai_state = "attack";
+        return;
+    }
+
+    // 타겟에게 이동
+    var dir = point_direction(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var move_speed = unit.movement_speed ?? 50;
+    unit.x += lengthdir_x(move_speed * delta, dir);
+    unit.y += lengthdir_y(move_speed * delta, dir);
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_boss_attack(unit, delta)
+function ai_boss_attack(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 80;
+
+    if (dist > attack_range) {
+        unit.ai_state = "move";
+        return;
+    }
+
+    // 패턴 스킬 사용 (쿨다운 완료 시)
+    if (unit.pattern_timer <= 0) {
+        unit.ai_state = "skill";
+        return;
+    }
+
+    // 기본 공격
+    if (unit.attack_timer <= 0) {
+        ai_attack_unit(unit, unit.ai_target);
+
+        var attack_speed = unit.attack_speed ?? 0.7;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_boss_skill(unit, delta)
+/// @desc 보스 패턴 스킬 사용
+function ai_boss_skill(unit, delta) {
+    var pattern = unit.current_pattern;
+
+    switch (pattern) {
+        case 0:
+            // 패턴 1: 강타 (고 데미지)
+            ai_boss_heavy_strike(unit);
+            break;
+
+        case 1:
+            // 패턴 2: 휩쓸기 (AOE)
+            ai_boss_sweep(unit);
+            break;
+
+        case 2:
+            // 패턴 3: 전쟁의 함성 (자기 버프)
+            ai_boss_war_cry(unit);
+            break;
+    }
+
+    // 다음 패턴
+    unit.current_pattern = (unit.current_pattern + 1) % 3;
+
+    // 패턴 쿨다운 (분노 시 더 빠름)
+    unit.pattern_timer = unit.enraged ? 4 : 6;
+
+    unit.ai_state = "attack";
+}
+
+/// @function ai_boss_heavy_strike(unit)
+/// @desc 보스 강타 - 현재 타겟에게 2배 데미지
+function ai_boss_heavy_strike(unit) {
+    if (!is_valid_target(unit.ai_target)) return;
+
+    var base_damage = (unit.physical_attack ?? 50) * 2;
+    var defense = unit.ai_target.physical_defense ?? 0;
+    var damage = base_damage * (100 / (100 + defense));
+
+    var damage_info = {
+        damage: damage,
+        damage_type: "physical",
+        is_crit: false
+    };
+
+    apply_damage(unit.ai_target, damage_info, unit);
+    combat_log("★ " + (unit.display_name ?? "보스") + " 강타!");
+}
+
+/// @function ai_boss_sweep(unit)
+/// @desc 보스 휩쓸기 - 주변 모든 적에게 데미지
+function ai_boss_sweep(unit) {
+    var targets = get_units_in_radius(unit.x, unit.y, 150, "ally");
+    var base_damage = unit.physical_attack ?? 50;
+
+    for (var i = 0; i < array_length(targets); i++) {
+        var target = targets[i];
+        var defense = target.physical_defense ?? 0;
+        var damage = base_damage * (100 / (100 + defense));
+
+        var damage_info = {
+            damage: damage,
+            damage_type: "physical",
+            is_crit: false
+        };
+
+        apply_damage(target, damage_info, unit);
+    }
+
+    if (array_length(targets) > 0) {
+        combat_log("★ " + (unit.display_name ?? "보스") + " 휩쓸기! (" + string(array_length(targets)) + "명 적중)");
+    }
+}
+
+/// @function ai_boss_war_cry(unit)
+/// @desc 보스 전쟁의 함성 - 자기 버프
+function ai_boss_war_cry(unit) {
+    // 10초간 공격력 50% 증가
+    var buff = {
+        type: "buff",
+        stat: "physical_attack",
+        amount: 50,
+        is_percent: true,
+        duration: 10,
+        remaining: 10
+    };
+
+    add_status_effect(unit, buff);
+    recalculate_unit_stats(unit);
+
+    combat_log("★ " + (unit.display_name ?? "보스") + " 전쟁의 함성!");
+}
+
+// ============================================
+// M3-4: Tank AI (아군)
+// ============================================
+
+/// @function ai_tank_update(unit, delta)
+/// @desc Tank AI 메인 업데이트
+function ai_tank_update(unit, delta) {
+    if (unit.hp <= 0) return;
+
+    // AI 상태 초기화
+    if (!variable_struct_exists(unit, "ai_state")) {
+        unit.ai_state = "idle";
+        unit.ai_target = undefined;
+        unit.attack_timer = 0;
+        unit.taunt_cooldown = 0;
+    }
+
+    if (unit.attack_timer > 0) {
+        unit.attack_timer -= delta;
+    }
+
+    if (unit.taunt_cooldown > 0) {
+        unit.taunt_cooldown -= delta;
+    }
+
+    switch (unit.ai_state) {
+        case "idle":
+            ai_tank_idle(unit);
+            break;
+        case "engage":
+            ai_tank_engage(unit, delta);
+            break;
+        case "protect":
+            ai_tank_protect(unit, delta);
+            break;
+    }
+}
+
+/// @function ai_tank_idle(unit)
+function ai_tank_idle(unit) {
+    // 가장 가까운 적 찾기
+    unit.ai_target = find_target_by_priority(unit, "nearest");
+
+    if (unit.ai_target != undefined) {
+        unit.ai_state = "engage";
+    }
+}
+
+/// @function ai_tank_engage(unit, delta)
+function ai_tank_engage(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 60;
+
+    // 도발 사용 (쿨다운 완료 시)
+    if (dist <= 200 && unit.taunt_cooldown <= 0) {
+        ai_tank_taunt(unit);
+        unit.taunt_cooldown = 10;
+    }
+
+    // 공격
+    if (dist <= attack_range && unit.attack_timer <= 0) {
+        ai_attack_unit(unit, unit.ai_target);
+
+        var attack_speed = unit.attack_speed ?? 0.8;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_tank_protect(unit, delta)
+/// @desc 아군 보호 (취약한 아군 근처로 이동)
+function ai_tank_protect(unit, delta) {
+    // 보호할 대상이 없으면 전투 복귀
+    var ally = find_ally_lowest_hp_percent(unit, 300);
+    if (ally == undefined) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    // 아군 근처로 이동
+    var dist = point_distance(unit.x, unit.y, ally.x, ally.y);
+    if (dist > 80) {
+        var dir = point_direction(unit.x, unit.y, ally.x, ally.y);
+        var move_speed = unit.movement_speed ?? 50;
+        unit.x += lengthdir_x(move_speed * delta, dir);
+        unit.y += lengthdir_y(move_speed * delta, dir);
+    }
+
+    // 근처 적 도발
+    if (unit.taunt_cooldown <= 0) {
+        ai_tank_taunt(unit);
+        unit.taunt_cooldown = 10;
+    }
+}
+
+/// @function ai_tank_taunt(unit)
+/// @desc 주변 적 도발
+function ai_tank_taunt(unit) {
+    var enemies = get_units_in_radius(unit.x, unit.y, 200, "enemy");
+
+    for (var i = 0; i < array_length(enemies); i++) {
+        var enemy = enemies[i];
+        enemy.ai_target = unit;
+        enemy.taunt_source = unit;
+        enemy.taunt_remaining = 3;
+    }
+
+    if (array_length(enemies) > 0) {
+        combat_log((unit.display_name ?? "탱커") + " 도발! (" + string(array_length(enemies)) + "명)");
+    }
+}
+
+// ============================================
+// M3-4: Healer AI (아군)
+// ============================================
+
+/// @function ai_healer_update(unit, delta)
+/// @desc Healer AI 메인 업데이트
+function ai_healer_update(unit, delta) {
+    if (unit.hp <= 0) return;
+
+    // AI 상태 초기화
+    if (!variable_struct_exists(unit, "ai_state")) {
+        unit.ai_state = "idle";
+        unit.ai_target = undefined;
+        unit.attack_timer = 0;
+        unit.heal_cooldown = 0;
+    }
+
+    if (unit.attack_timer > 0) {
+        unit.attack_timer -= delta;
+    }
+
+    if (unit.heal_cooldown > 0) {
+        unit.heal_cooldown -= delta;
+    }
+
+    // 마나 재생
+    update_unit_mana(unit, delta);
+
+    switch (unit.ai_state) {
+        case "idle":
+            ai_healer_idle(unit);
+            break;
+        case "heal":
+            ai_healer_heal(unit, delta);
+            break;
+        case "attack":
+            ai_healer_attack(unit, delta);
+            break;
+    }
+}
+
+/// @function ai_healer_idle(unit)
+function ai_healer_idle(unit) {
+    // 치유 필요한 아군 찾기 (HP 80% 미만)
+    var injured = find_ally_lowest_hp_percent(unit, unit.attack_range ?? 300);
+
+    if (injured != undefined && injured.hp / injured.max_hp < 0.8) {
+        unit.ai_target = injured;
+        unit.ai_state = "heal";
+        return;
+    }
+
+    // 치유할 대상 없으면 공격
+    var enemy = find_target_by_priority(unit, "nearest");
+    if (enemy != undefined) {
+        unit.ai_target = enemy;
+        unit.ai_state = "attack";
+    }
+}
+
+/// @function ai_healer_heal(unit, delta)
+function ai_healer_heal(unit, delta) {
+    // 타겟 유효성 체크
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    // HP 회복 완료되면 다른 대상 찾기
+    if (unit.ai_target.hp / unit.ai_target.max_hp >= 0.9) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var heal_range = unit.attack_range ?? 300;
+
+    // 사거리 밖이면 이동
+    if (dist > heal_range) {
+        var dir = point_direction(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+        var move_speed = unit.movement_speed ?? 60;
+        unit.x += lengthdir_x(move_speed * delta, dir);
+        unit.y += lengthdir_y(move_speed * delta, dir);
+        return;
+    }
+
+    // 힐 스킬 사용
+    if (unit.heal_cooldown <= 0 && (unit.mana ?? 100) >= 30) {
+        ai_healer_cast_heal(unit, unit.ai_target);
+        unit.heal_cooldown = 3;
+    }
+}
+
+/// @function ai_healer_cast_heal(unit, target)
+function ai_healer_cast_heal(unit, target) {
+    // 힐 스킬 사용 시도
+    if (variable_global_exists("skill_templates")) {
+        var success = use_skill(unit, "heal", target);
+        if (success) return;
+    }
+
+    // 스킬 없으면 기본 힐
+    var heal_amount = (unit.magic_attack ?? 30) * 1.5;
+    var old_hp = target.hp;
+    target.hp = min(target.hp + heal_amount, target.max_hp);
+    var actual_heal = target.hp - old_hp;
+
+    if (actual_heal > 0) {
+        show_damage_number(target.x, target.y, actual_heal, c_lime);
+        combat_log((unit.display_name ?? "힐러") + " → " + (target.display_name ?? "아군") + " 치유 +" + string(floor(actual_heal)));
+    }
+
+    // 마나 소모
+    unit.mana = max(0, (unit.mana ?? 100) - 30);
+}
+
+/// @function ai_healer_attack(unit, delta)
+function ai_healer_attack(unit, delta) {
+    // 치유 필요한 아군 체크
+    var injured = find_ally_lowest_hp_percent(unit, unit.attack_range ?? 300);
+    if (injured != undefined && injured.hp / injured.max_hp < 0.7) {
+        unit.ai_target = injured;
+        unit.ai_state = "heal";
+        return;
+    }
+
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 200;
+
+    if (dist <= attack_range && unit.attack_timer <= 0) {
+        ai_attack_unit(unit, unit.ai_target);
+
+        var attack_speed = unit.attack_speed ?? 0.8;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+}
+
+// ============================================
+// M3-4: DPS AI (아군 - 범용 딜러)
+// ============================================
+
+/// @function ai_dps_update(unit, delta)
+/// @desc DPS AI 메인 업데이트 (Melee/Ranged 공용)
+function ai_dps_update(unit, delta) {
+    if (unit.hp <= 0) return;
+
+    // AI 상태 초기화
+    if (!variable_struct_exists(unit, "ai_state")) {
+        unit.ai_state = "idle";
+        unit.ai_target = undefined;
+        unit.attack_timer = 0;
+        unit.skill_cooldown = 0;
+    }
+
+    if (unit.attack_timer > 0) {
+        unit.attack_timer -= delta;
+    }
+
+    if (unit.skill_cooldown > 0) {
+        unit.skill_cooldown -= delta;
+    }
+
+    // 마나 재생
+    update_unit_mana(unit, delta);
+
+    switch (unit.ai_state) {
+        case "idle":
+            ai_dps_idle(unit);
+            break;
+        case "engage":
+            ai_dps_engage(unit, delta);
+            break;
+        case "attack":
+            ai_dps_attack(unit, delta);
+            break;
+    }
+}
+
+/// @function ai_dps_idle(unit)
+function ai_dps_idle(unit) {
+    var priority = "lowest_hp_percent";
+    var role = unit.role ?? unit.ai_type ?? "warrior";
+
+    // 암살자는 고가치 타겟 우선
+    if (role == "assassin") {
+        priority = "backline";
+    }
+
+    unit.ai_target = find_target_by_priority(unit, priority);
+
+    if (unit.ai_target != undefined) {
+        unit.ai_state = "engage";
+    }
+}
+
+/// @function ai_dps_engage(unit, delta)
+function ai_dps_engage(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 80;
+
+    if (dist <= attack_range) {
+        unit.ai_state = "attack";
+        return;
+    }
+
+    // 타겟에게 이동
+    var dir = point_direction(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var move_speed = unit.movement_speed ?? 80;
+    unit.x += lengthdir_x(move_speed * delta, dir);
+    unit.y += lengthdir_y(move_speed * delta, dir);
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_dps_attack(unit, delta)
+function ai_dps_attack(unit, delta) {
+    if (!is_valid_target(unit.ai_target)) {
+        unit.ai_state = "idle";
+        return;
+    }
+
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 80;
+
+    if (dist > attack_range + 30) {
+        unit.ai_state = "engage";
+        return;
+    }
+
+    // 스킬 사용 (쿨다운 완료 시)
+    if (unit.skill_cooldown <= 0 && (unit.mana ?? 100) >= 20) {
+        var used = ai_dps_use_skill(unit);
+        if (used) {
+            unit.skill_cooldown = 4;
+        }
+    }
+
+    // 기본 공격
+    if (unit.attack_timer <= 0) {
+        ai_attack_unit(unit, unit.ai_target);
+
+        var attack_speed = unit.attack_speed ?? 1.0;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+
+    unit.facing = (unit.ai_target.x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_dps_use_skill(unit)
+/// @desc DPS 스킬 사용 시도
+function ai_dps_use_skill(unit) {
+    if (!variable_global_exists("skill_templates")) return false;
+
+    var role = unit.role ?? unit.ai_type ?? "warrior";
+    var skill_id = "";
+
+    switch (role) {
+        case "warrior":
+            skill_id = "power_strike";
+            break;
+        case "assassin":
+            skill_id = "assassinate";
+            break;
+        case "ranger":
+            skill_id = "multishot";
+            break;
+        case "mage":
+            skill_id = "fireball";
+            break;
+        default:
+            return false;
+    }
+
+    return use_skill(unit, skill_id, unit.ai_target);
 }

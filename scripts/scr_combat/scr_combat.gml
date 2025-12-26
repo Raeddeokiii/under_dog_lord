@@ -424,3 +424,225 @@ function draw_gate() {
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
 }
+
+// ========================================
+// M3-2: 타겟팅 우선순위 시스템
+// ========================================
+
+/// @func find_target_by_priority(unit, priority_type)
+/// @desc 우선순위에 따라 타겟 찾기
+function find_target_by_priority(unit, priority_type) {
+    var enemy_team = (unit.team == "ally") ? "enemy" : "ally";
+    var candidates = get_alive_units_by_team(enemy_team);
+
+    if (array_length(candidates) == 0) return undefined;
+
+    switch (priority_type) {
+        case "nearest":
+            return find_nearest_unit(unit, candidates);
+
+        case "lowest_hp":
+            return find_lowest_hp_unit(candidates);
+
+        case "lowest_hp_percent":
+            return find_lowest_hp_percent_unit(candidates);
+
+        case "highest_threat":
+            return find_highest_threat_unit(unit, candidates);
+
+        case "healer_first":
+            return find_unit_by_role(candidates, "healer") ?? find_nearest_unit(unit, candidates);
+
+        case "backline":
+            return find_backline_unit(candidates) ?? find_nearest_unit(unit, candidates);
+
+        case "random":
+            return candidates[irandom(array_length(candidates) - 1)];
+
+        default:
+            return find_nearest_unit(unit, candidates);
+    }
+}
+
+/// @func get_alive_units_by_team(team)
+function get_alive_units_by_team(team) {
+    var result = [];
+    var units;
+
+    if (team == "ally") {
+        units = variable_global_exists("ally_units") ? global.ally_units : [];
+    } else {
+        units = variable_global_exists("enemy_units") ? global.enemy_units : [];
+    }
+
+    for (var i = 0; i < array_length(units); i++) {
+        if (units[i].hp > 0) {
+            array_push(result, units[i]);
+        }
+    }
+
+    return result;
+}
+
+/// @func find_nearest_unit(from_unit, candidates)
+function find_nearest_unit(from_unit, candidates) {
+    var nearest = undefined;
+    var nearest_dist = infinity;
+
+    for (var i = 0; i < array_length(candidates); i++) {
+        var candidate = candidates[i];
+        if (candidate.hp <= 0) continue;
+
+        var dist = point_distance(from_unit.x, from_unit.y, candidate.x, candidate.y);
+        if (dist < nearest_dist) {
+            nearest_dist = dist;
+            nearest = candidate;
+        }
+    }
+
+    return nearest;
+}
+
+/// @func find_lowest_hp_unit(candidates)
+function find_lowest_hp_unit(candidates) {
+    var lowest = undefined;
+    var lowest_hp = infinity;
+
+    for (var i = 0; i < array_length(candidates); i++) {
+        var u = candidates[i];
+        if (u.hp <= 0) continue;
+
+        if (u.hp < lowest_hp) {
+            lowest_hp = u.hp;
+            lowest = u;
+        }
+    }
+
+    return lowest;
+}
+
+/// @func find_lowest_hp_percent_unit(candidates)
+function find_lowest_hp_percent_unit(candidates) {
+    var lowest = undefined;
+    var lowest_percent = infinity;
+
+    for (var i = 0; i < array_length(candidates); i++) {
+        var u = candidates[i];
+        if (u.hp <= 0) continue;
+
+        var percent = u.hp / u.max_hp;
+        if (percent < lowest_percent) {
+            lowest_percent = percent;
+            lowest = u;
+        }
+    }
+
+    return lowest;
+}
+
+/// @func find_highest_threat_unit(from_unit, candidates)
+/// @desc 위협도 = 공격력 / 거리
+function find_highest_threat_unit(from_unit, candidates) {
+    var highest = undefined;
+    var highest_threat = -infinity;
+
+    for (var i = 0; i < array_length(candidates); i++) {
+        var u = candidates[i];
+        if (u.hp <= 0) continue;
+
+        var dist = max(point_distance(from_unit.x, from_unit.y, u.x, u.y), 1);
+        var attack_power = max(u.physical_attack ?? 0, u.magic_attack ?? 0);
+        var threat = attack_power / dist;
+
+        if (threat > highest_threat) {
+            highest_threat = threat;
+            highest = u;
+        }
+    }
+
+    return highest;
+}
+
+/// @func find_unit_by_role(candidates, role)
+function find_unit_by_role(candidates, role) {
+    for (var i = 0; i < array_length(candidates); i++) {
+        var u = candidates[i];
+        if (u.hp <= 0) continue;
+
+        var unit_role = u.role ?? u.ai_type ?? "";
+        if (unit_role == role) {
+            return u;
+        }
+    }
+    return undefined;
+}
+
+/// @func find_backline_unit(candidates)
+/// @desc 가장 뒤에 있는 유닛 (y좌표 기준)
+function find_backline_unit(candidates) {
+    var backline = undefined;
+    var backline_y = infinity;  // 가장 작은 y = 가장 뒤
+
+    for (var i = 0; i < array_length(candidates); i++) {
+        var u = candidates[i];
+        if (u.hp <= 0) continue;
+
+        if (u.y < backline_y) {
+            backline_y = u.y;
+            backline = u;
+        }
+    }
+
+    return backline;
+}
+
+/// @func find_allies_in_range(unit, range)
+/// @desc 범위 내 아군 찾기
+function find_allies_in_range(unit, range) {
+    var result = [];
+    var allies = variable_global_exists("ally_units") ? global.ally_units : [];
+
+    if (unit.team == "enemy") {
+        allies = variable_global_exists("enemy_units") ? global.enemy_units : [];
+    }
+
+    for (var i = 0; i < array_length(allies); i++) {
+        var ally = allies[i];
+        if (ally.hp <= 0 || ally == unit) continue;
+
+        var dist = point_distance(unit.x, unit.y, ally.x, ally.y);
+        if (dist <= range) {
+            array_push(result, ally);
+        }
+    }
+
+    return result;
+}
+
+/// @func find_ally_lowest_hp_percent(unit, range)
+/// @desc 범위 내 가장 체력 비율이 낮은 아군
+function find_ally_lowest_hp_percent(unit, range) {
+    var allies = find_allies_in_range(unit, range);
+    if (array_length(allies) == 0) return undefined;
+
+    var lowest = undefined;
+    var lowest_percent = infinity;
+
+    for (var i = 0; i < array_length(allies); i++) {
+        var ally = allies[i];
+        var percent = ally.hp / ally.max_hp;
+        if (percent < lowest_percent) {
+            lowest_percent = percent;
+            lowest = ally;
+        }
+    }
+
+    return lowest;
+}
+
+/// @func is_valid_target(target)
+function is_valid_target(target) {
+    if (target == undefined) return false;
+    if (target.hp <= 0) return false;
+    return true;
+}
