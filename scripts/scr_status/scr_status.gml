@@ -337,47 +337,7 @@ function cleanse_debuffs(unit) {
     }
 }
 
-/// @func update_status_effects(unit, delta_time)
-/// @desc 상태이상 업데이트 (매 프레임 호출)
-/// @param unit 대상 유닛
-/// @param delta_time 프레임 시간 (초)
-function update_status_effects(unit, delta_time) {
-    if (!variable_struct_exists(unit, "status_effects")) return;
-
-    for (var i = array_length(unit.status_effects) - 1; i >= 0; i--) {
-        var effect = unit.status_effects[i];
-        var type_info = global.status_types[$ effect.type];
-
-        // 지속시간 감소
-        effect.duration -= delta_time;
-
-        // DOT/HOT 틱 처리
-        if (type_info != undefined) {
-            if (variable_struct_exists(type_info, "tick_rate")) {
-                effect.tick_timer += delta_time;
-                if (effect.tick_timer >= type_info.tick_rate) {
-                    effect.tick_timer -= type_info.tick_rate;
-
-                    // DOT 피해
-                    if (effect.type == "dot") {
-                        var damage = effect.amount;
-                        unit.hp = max(0, unit.hp - damage);
-                    }
-                    // HOT 회복
-                    else if (effect.type == "hot") {
-                        var heal = effect.amount;
-                        unit.hp = min(unit.max_hp, unit.hp + heal);
-                    }
-                }
-            }
-        }
-
-        // 만료된 효과 제거
-        if (effect.duration <= 0) {
-            array_delete(unit.status_effects, i, 1);
-        }
-    }
-}
+// update_status_effects는 scr_skill에 정의됨
 
 /// @func has_status_effect(unit, type_id)
 /// @desc 특정 상태이상 보유 여부

@@ -207,7 +207,7 @@ function ai_select_target(unit, enemies, allies) {
         case "ranger":
         case "mage":
             // 가장 약한 적 (처치 우선)
-            unit.ai.target = find_lowest_hp_unit(unit, available_enemies);
+            unit.ai.target = find_lowest_hp_unit(available_enemies);
             unit.ai.target_type = "enemy";
             break;
 
@@ -260,49 +260,8 @@ function ai_select_target(unit, enemies, allies) {
 }
 
 // ============================================
-// 타겟 탐색 헬퍼 함수
+// 타겟 탐색 헬퍼 함수 (scr_combat에 정의됨)
 // ============================================
-/// @function find_nearest_unit(unit, targets)
-function find_nearest_unit(unit, targets) {
-    var nearest = undefined;
-    var min_dist = infinity;
-
-    var i = 0;
-    repeat (array_length(targets)) {
-        var t = targets[i];
-        if (t.hp > 0) {
-            var dist = point_distance(unit.x, unit.y, t.x, t.y);
-            if (dist < min_dist) {
-                min_dist = dist;
-                nearest = t;
-            }
-        }
-        i++;
-    }
-
-    return nearest;
-}
-
-/// @function find_lowest_hp_unit(unit, targets)
-function find_lowest_hp_unit(unit, targets) {
-    var lowest = undefined;
-    var min_hp_ratio = infinity;
-
-    var i = 0;
-    repeat (array_length(targets)) {
-        var t = targets[i];
-        if (t.hp > 0) {
-            var ratio = t.hp / t.max_hp;
-            if (ratio < min_hp_ratio) {
-                min_hp_ratio = ratio;
-                lowest = t;
-            }
-        }
-        i++;
-    }
-
-    return lowest;
-}
 
 /// @function find_high_value_target(unit, enemies)
 /// @description 고가치 타겟 (힐러 > 원거리 > 일반)

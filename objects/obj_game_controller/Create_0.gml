@@ -7,7 +7,7 @@ if (global.font_korean != -1) {
 }
 
 // 디버그 모드 플래그
-global.debug_mode = false;
+global.game_debug_mode = false;
 
 // 시스템 초기화
 init_resource_system();
