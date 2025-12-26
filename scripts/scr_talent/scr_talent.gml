@@ -321,10 +321,7 @@ function talent_apply_passive(unit) {
     }
 
     // 캐시된 트리거 정보 가져오기
-    var parsed_trigger = global.talent_trigger_cache[$ unit.talent];
-    if (parsed_trigger == undefined) {
-        parsed_trigger = talent_parse_trigger(talent.trigger);
-    }
+    var parsed_trigger = global.talent_trigger_cache[$ unit.talent] ?? talent_parse_trigger(talent.trigger);
 
     // 효과 적용 여부 결정
     var should_apply = false;

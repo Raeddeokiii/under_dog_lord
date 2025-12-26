@@ -631,7 +631,7 @@ draw_combat_log(300, room_height - 250);
 var panel_y = room_height - 200;
 var left_panel_x = 50;
 var right_panel_x = room_width - 350;
-var center_x = room_width / 2;
+center_x = room_width / 2;
 
 // 왼쪽 패널 배경 (아군 조작)
 draw_set_alpha(0.8);

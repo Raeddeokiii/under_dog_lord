@@ -536,11 +536,11 @@ if (btn_clicked != "") {
             break;
         case "next_caster":
             var allies = global.debug.allies;
-            var current_idx = -1;
+            current_idx = -1;
             for (var ai = 0; ai < array_length(allies); ai++) {
                 if (allies[ai] == caster) { current_idx = ai; break; }
             }
-            var next_idx = (current_idx + 1) mod array_length(allies);
+            next_idx = (current_idx + 1) mod array_length(allies);
             global.debug.selected_ally = allies[next_idx];
             debug_log("시전자 변경: " + global.debug.selected_ally.display_name);
             break;
@@ -700,7 +700,7 @@ if (keyboard_check_pressed(vk_tab)) {
 // Shift+Tab: 시전자 순환 (아군 유닛 사이클)
 if (keyboard_check(vk_shift) && keyboard_check_pressed(vk_tab)) {
     var allies = global.debug.allies;
-    var current_idx = -1;
+    current_idx = -1;
 
     for (var ai = 0; ai < array_length(allies); ai++) {
         if (allies[ai] == global.debug.selected_ally) {
@@ -709,7 +709,7 @@ if (keyboard_check(vk_shift) && keyboard_check_pressed(vk_tab)) {
         }
     }
 
-    var next_idx = (current_idx + 1) mod array_length(allies);
+    next_idx = (current_idx + 1) mod array_length(allies);
     global.debug.selected_ally = allies[next_idx];
     debug_log("시전자 변경: " + global.debug.selected_ally.display_name);
 }

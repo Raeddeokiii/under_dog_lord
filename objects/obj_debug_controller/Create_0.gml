@@ -185,16 +185,16 @@ var create_button = function(id, label, x, y, w, h, color, action) {
 var panel_y = room_height - 200;
 var left_panel_x = 50;      // 아군 패널 (왼쪽)
 var right_panel_x = room_width - 350;  // 적군 패널 (오른쪽)
-var center_x = room_width / 2;
+var btn_center_x = room_width / 2;
 var btn_w = 70;
 var btn_h = 28;
 var btn_gap = 5;
 
 // === 중앙 패널 (공용) ===
-array_push(global.debug.buttons, create_button("basic_attack", "기본공격[G]", center_x - 180, panel_y, 90, 35, c_white, "basic_attack"));
-array_push(global.debug.buttons, create_button("skill_use", "스킬[SPACE]", center_x - 80, panel_y, 90, 35, c_lime, "skill_use"));
-array_push(global.debug.buttons, create_button("attack_sim", "적 공격[V]", center_x + 20, panel_y, 90, 35, c_orange, "attack_sim"));
-array_push(global.debug.buttons, create_button("reset_all", "전체 리셋", center_x - 50, panel_y + 45, 100, 30, c_silver, "reset_all"));
+array_push(global.debug.buttons, create_button("basic_attack", "기본공격[G]", btn_center_x - 180, panel_y, 90, 35, c_white, "basic_attack"));
+array_push(global.debug.buttons, create_button("skill_use", "스킬[SPACE]", btn_center_x - 80, panel_y, 90, 35, c_lime, "skill_use"));
+array_push(global.debug.buttons, create_button("attack_sim", "적 공격[V]", btn_center_x + 20, panel_y, 90, 35, c_orange, "attack_sim"));
+array_push(global.debug.buttons, create_button("reset_all", "전체 리셋", btn_center_x - 50, panel_y + 45, 100, 30, c_silver, "reset_all"));
 
 // === 왼쪽 패널 (아군 조작) ===
 var lx = left_panel_x;

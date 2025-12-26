@@ -133,10 +133,7 @@ function get_empty_slot() {
 /// @func get_best_slot_for_role(role)
 /// @desc 역할에 맞는 빈 슬롯 반환
 function get_best_slot_for_role(role) {
-    var preferred = global.role_preferred_slots[$ role];
-    if (preferred == undefined) {
-        preferred = global.slot_order;
-    }
+    var preferred = global.role_preferred_slots[$ role] ?? global.slot_order;
 
     // 권장 슬롯 중 빈 곳 찾기
     for (var i = 0; i < array_length(preferred); i++) {
