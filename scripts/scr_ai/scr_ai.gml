@@ -877,3 +877,247 @@ function get_skill_data(skill_id) {
 }
 
 // has_status_effect는 scr_status.gml에 정의됨
+
+
+// ============================================
+// M1-3: Rush AI (단순 버전)
+// ============================================
+// 적 유닛이 아군/성문 방향으로 돌진하는 기본 AI
+
+/// @function ai_rush_update(unit, delta)
+/// @desc Rush AI 메인 업데이트 (struct 기반)
+function ai_rush_update(unit, delta) {
+    if (unit.hp <= 0) return;
+    
+    // AI 상태 초기화
+    if (!variable_struct_exists(unit, "ai_state")) {
+        unit.ai_state = "idle";
+        unit.ai_target = undefined;
+        unit.attack_timer = 0;
+    }
+    
+    // 공격 쿨다운 감소
+    if (unit.attack_timer > 0) {
+        unit.attack_timer -= delta;
+    }
+    
+    switch (unit.ai_state) {
+        case "idle":
+            ai_rush_idle(unit);
+            break;
+        case "move":
+            ai_rush_move(unit, delta);
+            break;
+        case "attack":
+            ai_rush_attack(unit, delta);
+            break;
+    }
+}
+
+/// @function ai_rush_idle(unit)
+/// @desc Rush AI - 대기 상태: 타겟 찾기
+function ai_rush_idle(unit) {
+    unit.ai_target = ai_find_rush_target(unit);
+    
+    if (unit.ai_target != undefined) {
+        unit.ai_state = "move";
+    }
+}
+
+/// @function ai_rush_move(unit, delta)
+/// @desc Rush AI - 이동 상태: 타겟에게 돌진
+function ai_rush_move(unit, delta) {
+    if (!ai_is_valid_target(unit.ai_target)) {
+        unit.ai_target = undefined;
+        unit.ai_state = "idle";
+        return;
+    }
+    
+    var target_x = unit.ai_target.x;
+    var target_y = unit.ai_target.y;
+    var dist = point_distance(unit.x, unit.y, target_x, target_y);
+    var attack_range = unit.attack_range ?? 80;
+    
+    if (dist <= attack_range) {
+        unit.ai_state = "attack";
+        return;
+    }
+    
+    var dir = point_direction(unit.x, unit.y, target_x, target_y);
+    var move_speed = unit.movement_speed ?? 80;
+    var move_dist = move_speed * delta;
+    
+    unit.x += lengthdir_x(move_dist, dir);
+    unit.y += lengthdir_y(move_dist, dir);
+    unit.facing = (target_x > unit.x) ? 1 : -1;
+}
+
+/// @function ai_rush_attack(unit, delta)
+/// @desc Rush AI - 공격 상태
+function ai_rush_attack(unit, delta) {
+    if (!ai_is_valid_target(unit.ai_target)) {
+        unit.ai_target = undefined;
+        unit.ai_state = "idle";
+        return;
+    }
+    
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 80;
+    
+    if (dist > attack_range + 20) {
+        unit.ai_state = "move";
+        return;
+    }
+    
+    if (unit.attack_timer <= 0) {
+        if (variable_struct_exists(unit.ai_target, "is_gate") && unit.ai_target.is_gate) {
+            ai_attack_gate(unit);
+        } else {
+            ai_attack_unit(unit, unit.ai_target);
+        }
+        
+        var attack_speed = unit.attack_speed ?? 1.0;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+}
+
+/// @function ai_find_rush_target(unit)
+/// @desc 가장 가까운 아군 또는 성문 찾기
+function ai_find_rush_target(unit) {
+    var nearest = undefined;
+    var nearest_dist = 999999;
+    
+    if (variable_global_exists("ally_units")) {
+        for (var i = 0; i < array_length(global.ally_units); i++) {
+            var ally = global.ally_units[i];
+            if (ally.hp <= 0) continue;
+            
+            var dist = point_distance(unit.x, unit.y, ally.x, ally.y);
+            if (dist < nearest_dist) {
+                nearest_dist = dist;
+                nearest = ally;
+            }
+        }
+    }
+    
+    if (variable_global_exists("gate") && global.gate != undefined) {
+        if (global.gate.hp > 0) {
+            var gate_dist = point_distance(unit.x, unit.y, global.gate.x, global.gate.y);
+            if (nearest == undefined || gate_dist < nearest_dist * 0.7) {
+                nearest = global.gate;
+            }
+        }
+    }
+    
+    return nearest;
+}
+
+/// @function ai_is_valid_target(target)
+function ai_is_valid_target(target) {
+    if (target == undefined) return false;
+    if (target.hp <= 0) return false;
+    return true;
+}
+
+/// @function ai_attack_unit(attacker, target)
+function ai_attack_unit(attacker, target) {
+    var damage_info = calculate_basic_damage(attacker, target);
+    apply_damage(target, damage_info, attacker);
+}
+
+/// @function ai_attack_gate(attacker)
+function ai_attack_gate(attacker) {
+    if (!variable_global_exists("gate")) return;
+    if (global.gate.hp <= 0) return;
+    
+    var atk = attacker.physical_attack ?? 50;
+    var def = global.gate.defense ?? 50;
+    var damage = atk * (100 / (100 + def));
+    
+    global.gate.hp = max(0, global.gate.hp - damage);
+    combat_log((attacker.display_name ?? "적") + " -> 성문: " + string(floor(damage)));
+    
+    if (global.gate.hp <= 0) {
+        combat_log("★ 성문이 파괴되었습니다!");
+    }
+}
+
+// ============================================
+// M1-4: 아군 기본 AI
+// ============================================
+
+/// @function ai_ally_basic_update(unit, delta)
+function ai_ally_basic_update(unit, delta) {
+    if (unit.hp <= 0) return;
+    
+    if (!variable_struct_exists(unit, "ai_state")) {
+        unit.ai_state = "idle";
+        unit.ai_target = undefined;
+        unit.attack_timer = 0;
+    }
+    
+    if (unit.attack_timer > 0) {
+        unit.attack_timer -= delta;
+    }
+    
+    switch (unit.ai_state) {
+        case "idle":
+            ai_ally_find_target(unit);
+            break;
+        case "attack":
+            ai_ally_attack(unit, delta);
+            break;
+    }
+}
+
+/// @function ai_ally_find_target(unit)
+function ai_ally_find_target(unit) {
+    var nearest = undefined;
+    var nearest_dist = 999999;
+    
+    if (variable_global_exists("enemy_units")) {
+        for (var i = 0; i < array_length(global.enemy_units); i++) {
+            var enemy = global.enemy_units[i];
+            if (enemy.hp <= 0) continue;
+            
+            var dist = point_distance(unit.x, unit.y, enemy.x, enemy.y);
+            if (dist < nearest_dist) {
+                nearest_dist = dist;
+                nearest = enemy;
+            }
+        }
+    }
+    
+    if (nearest != undefined) {
+        var attack_range = unit.attack_range ?? 80;
+        if (nearest_dist <= attack_range) {
+            unit.ai_target = nearest;
+            unit.ai_state = "attack";
+        }
+    }
+}
+
+/// @function ai_ally_attack(unit, delta)
+function ai_ally_attack(unit, delta) {
+    if (!ai_is_valid_target(unit.ai_target)) {
+        unit.ai_target = undefined;
+        unit.ai_state = "idle";
+        return;
+    }
+    
+    var dist = point_distance(unit.x, unit.y, unit.ai_target.x, unit.ai_target.y);
+    var attack_range = unit.attack_range ?? 80;
+    
+    if (dist > attack_range) {
+        unit.ai_target = undefined;
+        unit.ai_state = "idle";
+        return;
+    }
+    
+    if (unit.attack_timer <= 0) {
+        ai_attack_unit(unit, unit.ai_target);
+        
+        var attack_speed = unit.attack_speed ?? 1.0;
+        unit.attack_timer = 1.0 / max(attack_speed, 0.1);
+    }
+}

@@ -332,3 +332,95 @@ function update_attack_cooldowns(delta) {
         }
     }
 }
+
+
+// ========================================
+// M1-5: 성문 시스템
+// ========================================
+
+/// @func init_gate()
+/// @desc 성문 초기화
+function init_gate() {
+    global.gate = {
+        x: 640,
+        y: 600,
+        
+        hp: 1000,
+        max_hp: 1000,
+        defense: 50,
+        
+        is_gate: true,
+        is_alive: true,
+        
+        // M6에서 확장
+        level: 1,
+        repair_cost: { gold: 100 }
+    };
+    
+    return global.gate;
+}
+
+/// @func get_gate_hp_percent()
+/// @desc 성문 HP 퍼센트 반환
+function get_gate_hp_percent() {
+    if (!variable_global_exists("gate")) return 0;
+    if (global.gate.max_hp <= 0) return 0;
+    return (global.gate.hp / global.gate.max_hp) * 100;
+}
+
+/// @func is_gate_destroyed()
+/// @desc 성문 파괴 여부
+function is_gate_destroyed() {
+    if (!variable_global_exists("gate")) return true;
+    return global.gate.hp <= 0;
+}
+
+/// @func repair_gate(amount)
+/// @desc 성문 수리
+function repair_gate(amount) {
+    if (!variable_global_exists("gate")) return;
+    
+    global.gate.hp = min(global.gate.hp + amount, global.gate.max_hp);
+    combat_log("성문 수리: +" + string(amount) + " HP");
+}
+
+/// @func draw_gate()
+/// @desc 성문 그리기 (디버그용)
+function draw_gate() {
+    if (!variable_global_exists("gate")) return;
+    
+    var gate = global.gate;
+    
+    // 성문 본체
+    var gate_color = (gate.hp > gate.max_hp * 0.3) ? c_gray : c_maroon;
+    draw_set_color(gate_color);
+    draw_rectangle(gate.x - 60, gate.y - 40, gate.x + 60, gate.y + 40, false);
+    
+    // 테두리
+    draw_set_color(c_white);
+    draw_rectangle(gate.x - 60, gate.y - 40, gate.x + 60, gate.y + 40, true);
+    
+    // HP 바
+    var hp_ratio = gate.hp / gate.max_hp;
+    var bar_width = 100;
+    var bar_x = gate.x - bar_width / 2;
+    var bar_y = gate.y - 55;
+    
+    // 배경
+    draw_set_color(c_dkgray);
+    draw_rectangle(bar_x, bar_y, bar_x + bar_width, bar_y + 8, false);
+    
+    // HP
+    var hp_color = (hp_ratio > 0.5) ? c_green : ((hp_ratio > 0.25) ? c_yellow : c_red);
+    draw_set_color(hp_color);
+    draw_rectangle(bar_x, bar_y, bar_x + bar_width * hp_ratio, bar_y + 8, false);
+    
+    // 텍스트
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_bottom);
+    draw_set_color(c_white);
+    draw_text(gate.x, bar_y - 2, "성문 " + string(floor(gate.hp)) + "/" + string(gate.max_hp));
+    
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+}
