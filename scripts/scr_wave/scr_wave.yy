@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_wave",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_wave",
+  "parent":{
+    "name":"under_dog_lord",
+    "path":"under_dog_lord.yyp",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
